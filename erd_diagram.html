@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8">
+<title>ERD Diagram</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@700;800&display=swap');
+
+  :root {
+    --bg: #0d0f14;
+    --surface: #13161e;
+    --border: #1e2330;
+    --accent: #00e5a0;
+    --accent2: #0091ff;
+    --accent3: #ff6b6b;
+    --accent4: #ffd166;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --line: #2a3040;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text);
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    position: fixed;
+    top: 18px;
+    left: 24px;
+    z-index: 100;
+  }
+
+  .controls {
+    position: fixed;
+    top: 14px;
+    right: 20px;
+    z-index: 100;
+    display: flex;
+    gap: 8px;
+  }
+
+  .btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    padding: 5px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  #canvas-wrap {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    cursor: grab;
+  }
+  #canvas-wrap.dragging { cursor: grabbing; }
+
+  #diagram {
+    position: absolute;
+    transform-origin: 0 0;
+    top: 0; left: 0;
+  }
+
+  svg#lines {
+    position: absolute;
+    top: 0; left: 0;
+    pointer-events: none;
+    overflow: visible;
+  }
+
+  .table-card {
+    position: absolute;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    min-width: 210px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+    transition: box-shadow 0.2s;
+    cursor: move;
+    user-select: none;
+  }
+  .table-card:hover { box-shadow: 0 0 0 2px var(--accent), 0 8px 32px rgba(0,229,160,0.15); }
+
+  .table-header {
+    padding: 8px 12px;
+    border-radius: 6px 6px 0 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .table-icon { font-size: 0.9rem; }
+
+  .table-body { padding: 6px 0 8px; }
+
+  .field-row {
+    display: flex;
+    align-items: center;
+    padding: 2px 12px;
+    font-size: 0.68rem;
+    line-height: 1.7;
+    gap: 6px;
+  }
+  .field-row:hover { background: rgba(255,255,255,0.03); }
+
+  .field-key {
+    color: var(--accent4);
+    font-size: 0.6rem;
+    min-width: 18px;
+    text-align: center;
+  }
+  .field-name { color: var(--text); flex: 1; }
+  .field-type { color: var(--muted); font-size: 0.6rem; }
+  .field-fk { color: var(--accent2); font-size: 0.6rem; }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 4px 0; }
+
+  /* Table color themes */
+  .t-users    .table-header { background: linear-gradient(90deg,#1a2a1a,#162a1f); border-bottom: 2px solid #00e5a0; color: #00e5a0; }
+  .t-business .table-header { background: linear-gradient(90deg,#1a1f2a,#162029); border-bottom: 2px solid #0091ff; color: #0091ff; }
+  .t-ngo      .table-header { background: linear-gradient(90deg,#1f1a2a,#211629); border-bottom: 2px solid #a855f7; color: #a855f7; }
+  .t-product  .table-header { background: linear-gradient(90deg,#2a1a1a,#291620); border-bottom: 2px solid #ff6b6b; color: #ff6b6b; }
+  .t-orders   .table-header { background: linear-gradient(90deg,#2a1f1a,#291d16); border-bottom: 2px solid #ffd166; color: #ffd166; }
+  .t-orderitem .table-header { background: linear-gradient(90deg,#1a2a2a,#162525); border-bottom: 2px solid #06d6a0; color: #06d6a0; }
+  .t-locker   .table-header { background: linear-gradient(90deg,#1a1a2a,#16162a); border-bottom: 2px solid #74b9ff; color: #74b9ff; }
+  .t-pickup   .table-header { background: linear-gradient(90deg,#2a2a1a,#2a2516); border-bottom: 2px solid #fdcb6e; color: #fdcb6e; }
+  .t-donation .table-header { background: linear-gradient(90deg,#2a1a2a,#291629); border-bottom: 2px solid #fd79a8; color: #fd79a8; }
+</style>
+</head>
+<body>
+
+<h1>⬡ ERD — Food Rescue DB</h1>
+<div class="controls">
+  <button class="btn" onclick="resetView()">⌖ Reset</button>
+  <button class="btn" onclick="zoomIn()">+ Zoom</button>
+  <button class="btn" onclick="zoomOut()">− Zoom</button>
+</div>
+
+<div id="canvas-wrap">
+  <div id="diagram">
+    <svg id="lines" width="4000" height="3000"></svg>
+  </div>
+</div>
+
+<script>
+const tables = [
+  {
+    id: 'users', label: 'USERS', icon: '👤', cls: 't-users',
+    x: 680, y: 60,
+    fields: [
+      { key: 'PK', name: 'user_id', type: 'SERIAL' },
+      { key: '', name: 'name', type: 'VARCHAR(50)' },
+      { key: '', name: 'phone', type: 'VARCHAR(20)' },
+      { key: '', name: 'email', type: 'VARCHAR(100)' },
+      { key: '', name: 'role', type: 'VARCHAR(20)' },
+      { key: '', name: 'created_at', type: 'TIMESTAMP' },
+    ]
+  },
+  {
+    id: 'business', label: 'BUSINESS', icon: '🏪', cls: 't-business',
+    x: 200, y: 280,
+    fields: [
+      { key: 'PK', name: 'business_id', type: 'SERIAL' },
+      { key: 'FK', name: 'user_id', type: 'INT', fk: 'users' },
+      { key: '', name: 'business_name', type: 'VARCHAR(100)' },
+      { key: '', name: 'type', type: 'VARCHAR(50)' },
+      { key: '', name: 'location', type: 'VARCHAR(100)' },
+      { key: '', name: 'created_at', type: 'TIMESTAMP' },
+    ]
+  },
+  {
+    id: 'ngo', label: 'NGO', icon: '🤝', cls: 't-ngo',
+    x: 1120, y: 280,
+    fields: [
+      { key: 'PK', name: 'ngo_id', type: 'SERIAL' },
+      { key: 'FK', name: 'user_id', type: 'INT', fk: 'users' },
+      { key: '', name: 'organization_name', type: 'VARCHAR(100)' },
+      { key: '', name: 'location', type: 'VARCHAR(100)' },
+      { key: '', name: 'created_at', type: 'TIMESTAMP' },
+    ]
+  },
+  {
+    id: 'product', label: 'PRODUCT', icon: '📦', cls: 't-product',
+    x: 200, y: 560,
+    fields: [
+      { key: 'PK', name: 'product_id', type: 'SERIAL' },
+      { key: 'FK', name: 'business_id', type: 'INT', fk: 'business' },
+      { key: '', name: 'name', type: 'VARCHAR(100)' },
+      { key: '', name: 'original_price', type: 'NUMERIC(10,2)' },
+      { key: '', name: 'ai_price', type: 'NUMERIC(10,2)' },
+      { key: '', name: 'ai_price_generated_at', type: 'TIMESTAMP' },
+      { key: '', name: 'quantity', type: 'INT' },
+      { key: '', name: 'expiry_time', type: 'TIMESTAMP' },
+      { key: '', name: 'status', type: 'VARCHAR(20)' },
+      { key: '', name: 'created_at', type: 'TIMESTAMP' },
+    ]
+  },
+  {
+    id: 'orders', label: 'ORDERS', icon: '🛒', cls: 't-orders',
+    x: 680, y: 340,
+    fields: [
+      { key: 'PK', name: 'order_id', type: 'SERIAL' },
+      { key: 'FK', name: 'user_id', type: 'INT', fk: 'users' },
+      { key: '', name: 'order_date', type: 'TIMESTAMP' },
+      { key: '', name: 'status', type: 'VARCHAR(20)' },
+      { key: '', name: 'payment_status', type: 'VARCHAR(20)' },
+      { key: '', name: 'payment_method', type: 'VARCHAR(20)' },
+      { key: '', name: 'paid_at', type: 'TIMESTAMP' },
+    ]
+  },
+  {
+    id: 'order_item', label: 'ORDER_ITEM', icon: '📋', cls: 't-orderitem',
+    x: 440, y: 620,
+    fields: [
+      { key: 'PK', name: 'order_item_id', type: 'SERIAL' },
+      { key: 'FK', name: 'order_id', type: 'INT', fk: 'orders' },
+      { key: 'FK', name: 'product_id', type: 'INT', fk: 'product' },
+      { key: '', name: 'quantity', type: 'INT' },
+      { key: '', name: 'unit_price', type: 'NUMERIC(10,2)' },
+    ]
+  },
+  {
+    id: 'locker', label: 'LOCKER', icon: '🔒', cls: 't-locker',
+    x: 960, y: 560,
+    fields: [
+      { key: 'PK', name: 'locker_id', type: 'SERIAL' },
+      { key: '', name: 'location', type: 'VARCHAR(100)' },
+      { key: '', name: 'address', type: 'VARCHAR(100)' },
+      { key: '', name: 'locker_code', type: 'VARCHAR(20)' },
+      { key: '', name: 'status', type: 'VARCHAR(20)' },
+      { key: '', name: 'created_at', type: 'TIMESTAMP' },
+    ]
+  },
+  {
+    id: 'pickup', label: 'PICKUP', icon: '📍', cls: 't-pickup',
+    x: 800, y: 720,
+    fields: [
+      { key: 'PK', name: 'pickup_id', type: 'SERIAL' },
+      { key: 'FK', name: 'order_id', type: 'INT', fk: 'orders' },
+      { key: 'FK', name: 'locker_id', type: 'INT', fk: 'locker' },
+      { key: '', name: 'pickup_code', type: 'VARCHAR(20)' },
+      { key: '', name: 'pickup_time', type: 'TIMESTAMP' },
+      { key: '', name: 'expired_at', type: 'TIMESTAMP' },
+      { key: '', name: 'status', type: 'VARCHAR(20)' },
+      { key: '', name: 'created_at', type: 'TIMESTAMP' },
+    ]
+  },
+  {
+    id: 'donation', label: 'DONATION', icon: '💝', cls: 't-donation',
+    x: 200, y: 900,
+    fields: [
+      { key: 'PK', name: 'donation_id', type: 'SERIAL' },
+      { key: 'FK', name: 'product_id', type: 'INT', fk: 'product' },
+      { key: 'FK', name: 'ngo_id', type: 'INT', fk: 'ngo' },
+      { key: 'FK', name: 'business_id', type: 'INT', fk: 'business' },
+      { key: '', name: 'quantity', type: 'INT' },
+      { key: '', name: 'status', type: 'VARCHAR(20)' },
+      { key: '', name: 'created_at', type: 'TIMESTAMP' },
+    ]
+  },
+];
+
+const fkColors = {
+  users: '#00e5a0', business: '#0091ff', ngo: '#a855f7',
+  product: '#ff6b6b', orders: '#ffd166', locker: '#74b9ff'
+};
+
+// Relation types: from -> to : type
+// 1:1, 1:N, N:1, N:M
+const relations = [
+  { from: 'business',   to: 'users',    type: 'N:1',  label: 'many businesses\n→ one user' },
+  { from: 'ngo',        to: 'users',    type: 'N:1',  label: 'many NGOs\n→ one user' },
+  { from: 'product',    to: 'business', type: 'N:1',  label: 'many products\n→ one business' },
+  { from: 'orders',     to: 'users',    type: 'N:1',  label: 'many orders\n→ one user' },
+  { from: 'order_item', to: 'orders',   type: 'N:1',  label: 'many items\n→ one order' },
+  { from: 'order_item', to: 'product',  type: 'N:1',  label: 'many items\n→ one product' },
+  { from: 'pickup',     to: 'orders',   type: '1:1',  label: 'one pickup\n↔ one order' },
+  { from: 'pickup',     to: 'locker',   type: 'N:1',  label: 'many pickups\n→ one locker' },
+  { from: 'donation',   to: 'product',  type: 'N:1',  label: 'many donations\n→ one product' },
+  { from: 'donation',   to: 'ngo',      type: 'N:1',  label: 'many donations\n→ one NGO' },
+  { from: 'donation',   to: 'business', type: 'N:1',  label: 'many donations\n→ one business' },
+];
+
+const diagram = document.getElementById('diagram');
+const svg = document.getElementById('lines');
+
+// Render tables
+const cardEls = {};
+tables.forEach(t => {
+  const card = document.createElement('div');
+  card.className = `table-card ${t.cls}`;
+  card.id = `card-${t.id}`;
+  card.style.left = t.x + 'px';
+  card.style.top = t.y + 'px';
+
+  let fields = t.fields.map(f => {
+    const fkLabel = f.fk ? `<span class="field-fk">→${f.fk}</span>` : '';
+    return `<div class="field-row">
+      <span class="field-key">${f.key}</span>
+      <span class="field-name">${f.name}</span>
+      <span class="field-type">${f.type}</span>
+      ${fkLabel}
+    </div>`;
+  }).join('');
+
+  card.innerHTML = `
+    <div class="table-header">
+      <span class="table-icon">${t.icon}</span>
+      <span>${t.label}</span>
+    </div>
+    <div class="table-body">${fields}</div>`;
+
+  diagram.appendChild(card);
+  cardEls[t.id] = card;
+
+  // Drag
+  let dragging = false, ox, oy;
+  card.addEventListener('mousedown', e => {
+    if (e.button !== 0) return;
+    dragging = true;
+    ox = e.clientX / scale - parseInt(card.style.left);
+    oy = e.clientY / scale - parseInt(card.style.top);
+    card.style.zIndex = 999;
+    e.stopPropagation();
+  });
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    card.style.left = (e.clientX / scale - ox) + 'px';
+    card.style.top = (e.clientY / scale - oy) + 'px';
+    drawLines();
+  });
+  document.addEventListener('mouseup', () => {
+    if (dragging) { dragging = false; card.style.zIndex = ''; }
+  });
+});
+
+// Draw relationship lines
+function getCenter(id) {
+  const c = cardEls[id];
+  return {
+    x: parseInt(c.style.left) + c.offsetWidth / 2,
+    y: parseInt(c.style.top) + c.offsetHeight / 2,
+  };
+}
+
+function getEdge(fromId, toId) {
+  const f = cardEls[fromId], t = cardEls[toId];
+  const fx = parseInt(f.style.left), fy = parseInt(f.style.top);
+  const fw = f.offsetWidth, fh = f.offsetHeight;
+  const tx = parseInt(t.style.left), ty = parseInt(t.style.top);
+  const tw = t.offsetWidth, th = t.offsetHeight;
+
+  const fcx = fx + fw/2, fcy = fy + fh/2;
+  const tcx = tx + tw/2, tcy = ty + th/2;
+
+  const dx = tcx - fcx, dy = tcy - fcy;
+  let sx, sy, ex, ey;
+
+  if (Math.abs(dx) > Math.abs(dy)) {
+    sx = dx > 0 ? fx + fw : fx; sy = fcy;
+    ex = dx > 0 ? tx : tx + tw; ey = tcy;
+  } else {
+    sx = fcx; sy = dy > 0 ? fy + fh : fy;
+    ex = tcx; ey = dy > 0 ? ty : ty + th;
+  }
+  return { sx, sy, ex, ey };
+}
+
+function svgEl(tag, attrs) {
+  const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  Object.entries(attrs).forEach(([k,v]) => el.setAttribute(k, v));
+  return el;
+}
+
+function drawCrowsFoot(svgRoot, x, y, angle, type, color) {
+  const len = 10, spread = 7;
+  const cos = Math.cos(angle), sin = Math.sin(angle);
+  const px1 = x + len*cos, py1 = y + len*sin;
+  if (type === 'many') {
+    svgRoot.appendChild(svgEl('line', { x1:x, y1:y, x2:px1, y2:py1, stroke:color, 'stroke-width':1.5, opacity:0.9 }));
+    svgRoot.appendChild(svgEl('line', { x1:x, y1:y, x2:px1+spread*sin, y2:py1-spread*cos, stroke:color, 'stroke-width':1.5, opacity:0.9 }));
+    svgRoot.appendChild(svgEl('line', { x1:x, y1:y, x2:px1-spread*sin, y2:py1+spread*cos, stroke:color, 'stroke-width':1.5, opacity:0.9 }));
+    svgRoot.appendChild(svgEl('line', { x1:px1+spread*sin, y1:py1-spread*cos, x2:px1-spread*sin, y2:py1+spread*cos, stroke:color, 'stroke-width':1.5, opacity:0.9 }));
+  } else {
+    const px2 = x+(len+5)*cos, py2 = y+(len+5)*sin;
+    svgRoot.appendChild(svgEl('line', { x1:px1+spread*sin, y1:py1-spread*cos, x2:px1-spread*sin, y2:py1+spread*cos, stroke:color, 'stroke-width':2, opacity:0.9 }));
+    svgRoot.appendChild(svgEl('line', { x1:px2+spread*sin, y1:py2-spread*cos, x2:px2-spread*sin, y2:py2+spread*cos, stroke:color, 'stroke-width':2, opacity:0.9 }));
+  }
+}
+
+function drawLines() {
+  svg.innerHTML = '';
+  const typeColors = { '1:1':'#a855f7', '1:N':'#ffd166', 'N:1':'#0091ff', 'N:M':'#ff6b6b' };
+
+  relations.forEach(rel => {
+    const color = fkColors[rel.to] || '#64748b';
+    const { sx, sy, ex, ey } = getEdge(rel.from, rel.to);
+    const mx = (sx + ex) / 2;
+    const d = `M${sx},${sy} C${mx},${sy} ${mx},${ey} ${ex},${ey}`;
+
+    svg.appendChild(svgEl('path', { d, stroke:color, 'stroke-width':'1.8', fill:'none', opacity:'0.5' }));
+
+    const [fromCard, toCard] = rel.type.split(':');
+    const startAngle = Math.atan2(sy - ey, sx - ex);
+    const endAngle   = Math.atan2(ey - sy, ex - sx);
+    drawCrowsFoot(svg, sx, sy, startAngle, fromCard === 'N' ? 'many' : 'one', color);
+    drawCrowsFoot(svg, ex, ey, endAngle,   toCard   === 'N' ? 'many' : 'one', color);
+
+    const bmx = (sx + ex) / 2, bmy = (sy + ey) / 2;
+    const badgeColor = typeColors[rel.type] || color;
+    svg.appendChild(svgEl('rect', { x:bmx-16, y:bmy-10, width:32, height:18, rx:4, fill:'#0d0f14', stroke:badgeColor, 'stroke-width':1.2, opacity:0.97 }));
+    const txt = svgEl('text', { x:bmx, y:bmy+4, 'text-anchor':'middle', fill:badgeColor, 'font-family':'JetBrains Mono,monospace', 'font-size':'9', 'font-weight':'700' });
+    txt.textContent = rel.type;
+    svg.appendChild(txt);
+  });
+}
+
+// Pan & Zoom
+let scale = 0.72, tx = 40, ty = 20;
+let panning = false, px, py;
+const wrap = document.getElementById('canvas-wrap');
+
+function applyTransform() {
+  diagram.style.transform = `translate(${tx}px,${ty}px) scale(${scale})`;
+  drawLines();
+}
+
+wrap.addEventListener('mousedown', e => {
+  if (e.target === wrap || e.target === diagram || e.target === svg) {
+    panning = true; px = e.clientX - tx; py = e.clientY - ty;
+    wrap.classList.add('dragging');
+  }
+});
+document.addEventListener('mousemove', e => {
+  if (!panning) return;
+  tx = e.clientX - px; ty = e.clientY - py;
+  applyTransform();
+});
+document.addEventListener('mouseup', () => { panning = false; wrap.classList.remove('dragging'); });
+
+wrap.addEventListener('wheel', e => {
+  e.preventDefault();
+  const delta = e.deltaY > 0 ? 0.9 : 1.1;
+  scale = Math.min(2, Math.max(0.2, scale * delta));
+  applyTransform();
+}, { passive: false });
+
+function resetView() { scale = 0.72; tx = 40; ty = 20; applyTransform(); }
+function zoomIn() { scale = Math.min(2, scale * 1.2); applyTransform(); }
+function zoomOut() { scale = Math.max(0.2, scale * 0.85); applyTransform(); }
+
+// Init after render
+setTimeout(() => { applyTransform(); }, 100);
+</script>
+</body>
+</html>
