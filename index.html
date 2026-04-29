@@ -1,479 +1,401 @@
 <!DOCTYPE html>
-<html lang="mn">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>ERD Diagram</title>
+<title>ERD – Food Rescue DB</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@700;800&display=swap');
-
-  :root {
-    --bg: #0d0f14;
-    --surface: #13161e;
-    --border: #1e2330;
-    --accent: #00e5a0;
-    --accent2: #0091ff;
-    --accent3: #ff6b6b;
-    --accent4: #ffd166;
-    --text: #e2e8f0;
-    --muted: #64748b;
-    --line: #2a3040;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    background: var(--bg);
-    font-family: 'JetBrains Mono', monospace;
-    color: var(--text);
-    overflow: hidden;
-    width: 100vw;
-    height: 100vh;
-  }
-
-  h1 {
-    font-family: 'Syne', sans-serif;
-    font-size: 1.1rem;
-    font-weight: 800;
-    color: var(--accent);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    position: fixed;
-    top: 18px;
-    left: 24px;
-    z-index: 100;
-  }
-
-  .controls {
-    position: fixed;
-    top: 14px;
-    right: 20px;
-    z-index: 100;
-    display: flex;
-    gap: 8px;
-  }
-
-  .btn {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.7rem;
-    padding: 5px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .btn:hover { border-color: var(--accent); color: var(--accent); }
-
-  #canvas-wrap {
-    width: 100%;
-    height: 100%;
-    position: relative;
-    overflow: hidden;
-    cursor: grab;
-  }
-  #canvas-wrap.dragging { cursor: grabbing; }
-
-  #diagram {
-    position: absolute;
-    transform-origin: 0 0;
-    top: 0; left: 0;
-  }
-
-  svg#lines {
-    position: absolute;
-    top: 0; left: 0;
-    pointer-events: none;
-    overflow: visible;
-  }
-
-  .table-card {
-    position: absolute;
-    background: var(--surface);
-    border: 1.5px solid var(--border);
-    border-radius: 8px;
-    min-width: 210px;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.5);
-    transition: box-shadow 0.2s;
-    cursor: move;
-    user-select: none;
-  }
-  .table-card:hover { box-shadow: 0 0 0 2px var(--accent), 0 8px 32px rgba(0,229,160,0.15); }
-
-  .table-header {
-    padding: 8px 12px;
-    border-radius: 6px 6px 0 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: 700;
-    font-size: 0.78rem;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-  }
-
-  .table-icon { font-size: 0.9rem; }
-
-  .table-body { padding: 6px 0 8px; }
-
-  .field-row {
-    display: flex;
-    align-items: center;
-    padding: 2px 12px;
-    font-size: 0.68rem;
-    line-height: 1.7;
-    gap: 6px;
-  }
-  .field-row:hover { background: rgba(255,255,255,0.03); }
-
-  .field-key {
-    color: var(--accent4);
-    font-size: 0.6rem;
-    min-width: 18px;
-    text-align: center;
-  }
-  .field-name { color: var(--text); flex: 1; }
-  .field-type { color: var(--muted); font-size: 0.6rem; }
-  .field-fk { color: var(--accent2); font-size: 0.6rem; }
-
-  .divider { border: none; border-top: 1px solid var(--border); margin: 4px 0; }
-
-  /* Table color themes */
-  .t-users    .table-header { background: linear-gradient(90deg,#1a2a1a,#162a1f); border-bottom: 2px solid #00e5a0; color: #00e5a0; }
-  .t-business .table-header { background: linear-gradient(90deg,#1a1f2a,#162029); border-bottom: 2px solid #0091ff; color: #0091ff; }
-  .t-ngo      .table-header { background: linear-gradient(90deg,#1f1a2a,#211629); border-bottom: 2px solid #a855f7; color: #a855f7; }
-  .t-product  .table-header { background: linear-gradient(90deg,#2a1a1a,#291620); border-bottom: 2px solid #ff6b6b; color: #ff6b6b; }
-  .t-orders   .table-header { background: linear-gradient(90deg,#2a1f1a,#291d16); border-bottom: 2px solid #ffd166; color: #ffd166; }
-  .t-orderitem .table-header { background: linear-gradient(90deg,#1a2a2a,#162525); border-bottom: 2px solid #06d6a0; color: #06d6a0; }
-  .t-locker   .table-header { background: linear-gradient(90deg,#1a1a2a,#16162a); border-bottom: 2px solid #74b9ff; color: #74b9ff; }
-  .t-pickup   .table-header { background: linear-gradient(90deg,#2a2a1a,#2a2516); border-bottom: 2px solid #fdcb6e; color: #fdcb6e; }
-  .t-donation .table-header { background: linear-gradient(90deg,#2a1a2a,#291629); border-bottom: 2px solid #fd79a8; color: #fd79a8; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:#f0f4f8;font-family:'Segoe UI',Arial,sans-serif;overflow:hidden;width:100vw;height:100vh;}
+  #toolbar{position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:200;
+    background:rgba(255,255,255,0.96);border:1px solid #ccc;border-radius:10px;
+    padding:7px 20px;display:flex;gap:12px;align-items:center;
+    box-shadow:0 3px 12px rgba(0,0,0,0.15);font-size:13px;color:#333;}
+  .t-title{font-weight:800;font-size:14px;color:#222;letter-spacing:.03em;}
+  .btn{background:#f5f5f5;border:1px solid #ccc;border-radius:5px;padding:4px 12px;cursor:pointer;font-size:12px;}
+  .btn:hover{background:#e0e0e0;border-color:#aaa;}
+  .btn-dl{background:#e8f5e9;border-color:#4caf50;color:#1b5e20;}
+  #svg-wrap{width:100%;height:100%;overflow:hidden;cursor:grab;}
+  #svg-wrap.panning{cursor:grabbing;}
+  #main-svg{display:block;}
+  .node-g{cursor:move;}
+  #legend{position:fixed;bottom:14px;right:16px;z-index:200;
+    background:rgba(255,255,255,0.97);border:1px solid #ccc;border-radius:8px;
+    padding:10px 14px;font-size:11px;font-family:'Segoe UI',Arial,sans-serif;
+    box-shadow:0 2px 8px rgba(0,0,0,0.12);}
+  #legend b{font-size:12px;display:block;margin-bottom:6px;}
+  .lr{display:flex;align-items:center;gap:7px;margin-top:4px;}
+  .ls{width:15px;height:15px;border-radius:2px;flex-shrink:0;}
 </style>
 </head>
 <body>
 
-<h1>⬡ ERD — Food Rescue DB</h1>
-<div class="controls">
+<div id="toolbar">
+  <span class="t-title">Entity Relationship Diagram — Food Rescue DB</span>
   <button class="btn" onclick="resetView()">⌖ Reset</button>
-  <button class="btn" onclick="zoomIn()">+ Zoom</button>
-  <button class="btn" onclick="zoomOut()">− Zoom</button>
+  <button class="btn" onclick="zoomBy(1.2)">+ Zoom</button>
+  <button class="btn" onclick="zoomBy(0.83)">− Zoom</button>
+  <button class="btn btn-dl" onclick="downloadSelf()">⬇ Download HTML</button>
 </div>
 
-<div id="canvas-wrap">
-  <div id="diagram">
-    <svg id="lines" width="4000" height="3000"></svg>
-  </div>
+<div id="svg-wrap">
+  <svg id="main-svg" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+        <feDropShadow dx="2" dy="2" stdDeviation="2.5" flood-color="rgba(0,0,0,0.2)"/>
+      </filter>
+    </defs>
+    <g id="root-g"></g>
+  </svg>
+</div>
+
+<div id="legend">
+  <b>LEGEND</b>
+  <div class="lr"><div class="ls" style="background:#dae8fc;border:2px solid #5b82bd"></div><span>User Core (roles, users)</span></div>
+  <div class="lr"><div class="ls" style="background:#d5e8d4;border:2px solid #6aab5e"></div><span>User Subclasses</span></div>
+  <div class="lr"><div class="ls" style="background:#ffe6cc;border:2px solid #d18c00"></div><span>Organization</span></div>
+  <div class="lr"><div class="ls" style="background:#fff2cc;border:2px solid #c9b100"></div><span>Org Types (business, ngo)</span></div>
+  <div class="lr"><div class="ls" style="background:#e1d5e7;border:2px solid #8b5fa3"></div><span>Commerce</span></div>
+  <div class="lr"><div class="ls" style="background:#f8cecc;border:2px solid #c0504d"></div><span>Logistics (pickup, locker)</span></div>
+  <div class="lr"><div class="ls" style="background:#d0e8e8;border:2px solid #0096a0"></div><span>NGO / Donation</span></div>
 </div>
 
 <script>
-const tables = [
-  {
-    id: 'users', label: 'USERS', icon: '👤', cls: 't-users',
-    x: 680, y: 60,
-    fields: [
-      { key: 'PK', name: 'user_id', type: 'SERIAL' },
-      { key: '', name: 'name', type: 'VARCHAR(50)' },
-      { key: '', name: 'phone', type: 'VARCHAR(20)' },
-      { key: '', name: 'email', type: 'VARCHAR(100)' },
-      { key: '', name: 'role', type: 'VARCHAR(20)' },
-      { key: '', name: 'created_at', type: 'TIMESTAMP' },
-    ]
-  },
-  {
-    id: 'business', label: 'BUSINESS', icon: '🏪', cls: 't-business',
-    x: 200, y: 280,
-    fields: [
-      { key: 'PK', name: 'business_id', type: 'SERIAL' },
-      { key: 'FK', name: 'user_id', type: 'INT', fk: 'users' },
-      { key: '', name: 'business_name', type: 'VARCHAR(100)' },
-      { key: '', name: 'type', type: 'VARCHAR(50)' },
-      { key: '', name: 'location', type: 'VARCHAR(100)' },
-      { key: '', name: 'created_at', type: 'TIMESTAMP' },
-    ]
-  },
-  {
-    id: 'ngo', label: 'NGO', icon: '🤝', cls: 't-ngo',
-    x: 1120, y: 280,
-    fields: [
-      { key: 'PK', name: 'ngo_id', type: 'SERIAL' },
-      { key: 'FK', name: 'user_id', type: 'INT', fk: 'users' },
-      { key: '', name: 'organization_name', type: 'VARCHAR(100)' },
-      { key: '', name: 'location', type: 'VARCHAR(100)' },
-      { key: '', name: 'created_at', type: 'TIMESTAMP' },
-    ]
-  },
-  {
-    id: 'product', label: 'PRODUCT', icon: '📦', cls: 't-product',
-    x: 200, y: 560,
-    fields: [
-      { key: 'PK', name: 'product_id', type: 'SERIAL' },
-      { key: 'FK', name: 'business_id', type: 'INT', fk: 'business' },
-      { key: '', name: 'name', type: 'VARCHAR(100)' },
-      { key: '', name: 'original_price', type: 'NUMERIC(10,2)' },
-      { key: '', name: 'ai_price', type: 'NUMERIC(10,2)' },
-      { key: '', name: 'ai_price_generated_at', type: 'TIMESTAMP' },
-      { key: '', name: 'quantity', type: 'INT' },
-      { key: '', name: 'expiry_time', type: 'TIMESTAMP' },
-      { key: '', name: 'status', type: 'VARCHAR(20)' },
-      { key: '', name: 'created_at', type: 'TIMESTAMP' },
-    ]
-  },
-  {
-    id: 'orders', label: 'ORDERS', icon: '🛒', cls: 't-orders',
-    x: 680, y: 340,
-    fields: [
-      { key: 'PK', name: 'order_id', type: 'SERIAL' },
-      { key: 'FK', name: 'user_id', type: 'INT', fk: 'users' },
-      { key: '', name: 'order_date', type: 'TIMESTAMP' },
-      { key: '', name: 'status', type: 'VARCHAR(20)' },
-      { key: '', name: 'payment_status', type: 'VARCHAR(20)' },
-      { key: '', name: 'payment_method', type: 'VARCHAR(20)' },
-      { key: '', name: 'paid_at', type: 'TIMESTAMP' },
-    ]
-  },
-  {
-    id: 'order_item', label: 'ORDER_ITEM', icon: '📋', cls: 't-orderitem',
-    x: 440, y: 620,
-    fields: [
-      { key: 'PK', name: 'order_item_id', type: 'SERIAL' },
-      { key: 'FK', name: 'order_id', type: 'INT', fk: 'orders' },
-      { key: 'FK', name: 'product_id', type: 'INT', fk: 'product' },
-      { key: '', name: 'quantity', type: 'INT' },
-      { key: '', name: 'unit_price', type: 'NUMERIC(10,2)' },
-    ]
-  },
-  {
-    id: 'locker', label: 'LOCKER', icon: '🔒', cls: 't-locker',
-    x: 960, y: 560,
-    fields: [
-      { key: 'PK', name: 'locker_id', type: 'SERIAL' },
-      { key: '', name: 'location', type: 'VARCHAR(100)' },
-      { key: '', name: 'address', type: 'VARCHAR(100)' },
-      { key: '', name: 'locker_code', type: 'VARCHAR(20)' },
-      { key: '', name: 'status', type: 'VARCHAR(20)' },
-      { key: '', name: 'created_at', type: 'TIMESTAMP' },
-    ]
-  },
-  {
-    id: 'pickup', label: 'PICKUP', icon: '📍', cls: 't-pickup',
-    x: 800, y: 720,
-    fields: [
-      { key: 'PK', name: 'pickup_id', type: 'SERIAL' },
-      { key: 'FK', name: 'order_id', type: 'INT', fk: 'orders' },
-      { key: 'FK', name: 'locker_id', type: 'INT', fk: 'locker' },
-      { key: '', name: 'pickup_code', type: 'VARCHAR(20)' },
-      { key: '', name: 'pickup_time', type: 'TIMESTAMP' },
-      { key: '', name: 'expired_at', type: 'TIMESTAMP' },
-      { key: '', name: 'status', type: 'VARCHAR(20)' },
-      { key: '', name: 'created_at', type: 'TIMESTAMP' },
-    ]
-  },
-  {
-    id: 'donation', label: 'DONATION', icon: '💝', cls: 't-donation',
-    x: 200, y: 900,
-    fields: [
-      { key: 'PK', name: 'donation_id', type: 'SERIAL' },
-      { key: 'FK', name: 'product_id', type: 'INT', fk: 'product' },
-      { key: 'FK', name: 'ngo_id', type: 'INT', fk: 'ngo' },
-      { key: 'FK', name: 'business_id', type: 'INT', fk: 'business' },
-      { key: '', name: 'quantity', type: 'INT' },
-      { key: '', name: 'status', type: 'VARCHAR(20)' },
-      { key: '', name: 'created_at', type: 'TIMESTAMP' },
-    ]
-  },
+const NS='http://www.w3.org/2000/svg';
+
+const SECTIONS=[
+  {label:'User Management', x:30,  y:100, w:900,  h:780, fill:'#EBF3FE',stroke:'#5b82bd',tc:'#1a3a6b'},
+  {label:'Organization',    x:940, y:100, w:760,  h:780, fill:'#FFF5E0',stroke:'#d18c00',tc:'#5a2800'},
+  {label:'Commerce',        x:30,  y:890, w:1150, h:620, fill:'#EDE6F0',stroke:'#8b5fa3',tc:'#3a1a5a'},
+  {label:'Logistics',       x:30,  y:1520,w:1150, h:340, fill:'#FBE4E3',stroke:'#c0504d',tc:'#5a1a1a'},
+  {label:'NGO / Donation',  x:1190,y:890, w:520,  h:620, fill:'#E0F2F2',stroke:'#0096a0',tc:'#003040'},
 ];
 
-const fkColors = {
-  users: '#00e5a0', business: '#0091ff', ngo: '#a855f7',
-  product: '#ff6b6b', orders: '#ffd166', locker: '#74b9ff'
-};
-
-// Relation types: from -> to : type
-// 1:1, 1:N, N:1, N:M
-const relations = [
-  { from: 'business',   to: 'users',    type: 'N:1',  label: 'many businesses\n→ one user' },
-  { from: 'ngo',        to: 'users',    type: 'N:1',  label: 'many NGOs\n→ one user' },
-  { from: 'product',    to: 'business', type: 'N:1',  label: 'many products\n→ one business' },
-  { from: 'orders',     to: 'users',    type: 'N:1',  label: 'many orders\n→ one user' },
-  { from: 'order_item', to: 'orders',   type: 'N:1',  label: 'many items\n→ one order' },
-  { from: 'order_item', to: 'product',  type: 'N:1',  label: 'many items\n→ one product' },
-  { from: 'pickup',     to: 'orders',   type: '1:1',  label: 'one pickup\n↔ one order' },
-  { from: 'pickup',     to: 'locker',   type: 'N:1',  label: 'many pickups\n→ one locker' },
-  { from: 'donation',   to: 'product',  type: 'N:1',  label: 'many donations\n→ one product' },
-  { from: 'donation',   to: 'ngo',      type: 'N:1',  label: 'many donations\n→ one NGO' },
-  { from: 'donation',   to: 'business', type: 'N:1',  label: 'many donations\n→ one business' },
+const NODES=[
+  // ENTITIES
+  {id:'e_roles',   type:'entity',label:'roles',          x:90,  y:240, w:130,h:50, fill:'#dae8fc',stroke:'#5b82bd',tc:'#1a3a6b'},
+  {id:'e_users',   type:'entity',label:'users',          x:560, y:240, w:140,h:50, fill:'#dae8fc',stroke:'#5b82bd',tc:'#1a3a6b'},
+  {id:'e_cust',    type:'entity',label:'customer',       x:80,  y:490, w:140,h:50, fill:'#d5e8d4',stroke:'#6aab5e',tc:'#1a4a1a'},
+  {id:'e_bizown',  type:'entity',label:'business_owner', x:370, y:490, w:160,h:50, fill:'#d5e8d4',stroke:'#6aab5e',tc:'#1a4a1a'},
+  {id:'e_ngoadm',  type:'entity',label:'ngo_admin',      x:665, y:580, w:150,h:50, fill:'#d5e8d4',stroke:'#6aab5e',tc:'#1a4a1a'},
+  {id:'e_org',     type:'entity',label:'organization',   x:1080,y:240, w:170,h:50, fill:'#ffe6cc',stroke:'#d18c00',tc:'#5a2800'},
+  {id:'e_biz',     type:'entity',label:'business',       x:970, y:490, w:140,h:50, fill:'#fff2cc',stroke:'#c9b100',tc:'#4a3a00'},
+  {id:'e_ngo',     type:'entity',label:'ngo',            x:1305,y:490, w:130,h:50, fill:'#fff2cc',stroke:'#c9b100',tc:'#4a3a00'},
+  {id:'e_product', type:'entity',label:'product',        x:920, y:960, w:140,h:50, fill:'#e1d5e7',stroke:'#8b5fa3',tc:'#3a1a5a'},
+  {id:'e_orders',  type:'entity',label:'orders',         x:150, y:960, w:140,h:50, fill:'#e1d5e7',stroke:'#8b5fa3',tc:'#3a1a5a'},
+  {id:'e_oitem',   type:'entity',label:'order_item',     x:530, y:960, w:150,h:50, fill:'#e1d5e7',stroke:'#8b5fa3',tc:'#3a1a5a'},
+  {id:'e_pickup',  type:'entity',label:'pickup',         x:130, y:1600,w:140,h:50, fill:'#f8cecc',stroke:'#c0504d',tc:'#5a1a1a'},
+  {id:'e_locker',  type:'entity',label:'locker',         x:760, y:1600,w:140,h:50, fill:'#f8cecc',stroke:'#c0504d',tc:'#5a1a1a'},
+  {id:'e_donation',type:'entity',label:'donation',       x:1320,y:960, w:140,h:50, fill:'#d0e8e8',stroke:'#0096a0',tc:'#003040'},
+  // RELATIONSHIP DIAMONDS
+  {id:'rel_hasrole', type:'rel',label:'Has Role',  x:330, y:248, w:105,h:52, fill:'#fff',stroke:'#5b82bd',tc:'#1a3a6b'},
+  {id:'rel_isa_u',   type:'rel',label:'ISA',       x:500, y:388, w:80, h:44, fill:'#fff',stroke:'#5b82bd',tc:'#1a3a6b'},
+  {id:'rel_manages', type:'rel',label:'Manages',   x:820, y:248, w:105,h:52, fill:'#fff',stroke:'#d18c00',tc:'#5a2800'},
+  {id:'rel_isa_o',   type:'rel',label:'ISA',       x:1155,y:395, w:80, h:44, fill:'#fff',stroke:'#d18c00',tc:'#5a2800'},
+  {id:'rel_biz_bt',  type:'rel',label:'Belongs To',x:668, y:510, w:112,h:52, fill:'#fff',stroke:'#c9b100',tc:'#4a3a00'},
+  {id:'rel_ngo_bt',  type:'rel',label:'Belongs To',x:1240,y:570, w:112,h:52, fill:'#fff',stroke:'#c9b100',tc:'#4a3a00'},
+  {id:'rel_sells',   type:'rel',label:'Sells',     x:820, y:758, w:80, h:44, fill:'#fff',stroke:'#c9b100',tc:'#4a3a00'},
+  {id:'rel_places',  type:'rel',label:'Places',    x:145, y:730, w:90, h:46, fill:'#fff',stroke:'#5b82bd',tc:'#1a3a6b'},
+  {id:'rel_contains',type:'rel',label:'Contains',  x:368, y:983, w:112,h:52, fill:'#fff',stroke:'#8b5fa3',tc:'#3a1a5a'},
+  {id:'rel_refs',    type:'rel',label:'References',x:738, y:983, w:118,h:52, fill:'#fff',stroke:'#8b5fa3',tc:'#3a1a5a'},
+  {id:'rel_delivers',type:'rel',label:'Delivers',  x:148, y:1292,w:102,h:52, fill:'#fff',stroke:'#c0504d',tc:'#5a1a1a'},
+  {id:'rel_uses',    type:'rel',label:'Uses',      x:487, y:1618,w:80, h:46, fill:'#fff',stroke:'#c0504d',tc:'#5a1a1a'},
+  {id:'rel_receives',type:'rel',label:'Receives',  x:1408,y:808, w:108,h:52, fill:'#fff',stroke:'#0096a0',tc:'#003040'},
+  {id:'rel_involves',type:'rel',label:'Involves',  x:1170,y:1085,w:102,h:52, fill:'#fff',stroke:'#0096a0',tc:'#003040'},
+  // ATTRIBUTES — roles
+  {id:'a_rid',    type:'attr',label:'role_id',   pk:true, x:40,  y:162, w:115,h:38, fill:'#EBF3FE',stroke:'#5b82bd',tc:'#1a3a6b'},
+  {id:'a_rname',  type:'attr',label:'role_name',          x:198, y:162, w:125,h:38, fill:'#EBF3FE',stroke:'#5b82bd',tc:'#1a3a6b'},
+  // users
+  {id:'a_uid',    type:'attr',label:'user_id',   pk:true, x:616, y:127, w:112,h:38, fill:'#EBF3FE',stroke:'#5b82bd',tc:'#1a3a6b'},
+  {id:'a_uname',  type:'attr',label:'name',               x:456, y:163, w:90, h:38, fill:'#EBF3FE',stroke:'#5b82bd',tc:'#1a3a6b'},
+  {id:'a_uphone', type:'attr',label:'phone',              x:456, y:318, w:90, h:38, fill:'#EBF3FE',stroke:'#5b82bd',tc:'#1a3a6b'},
+  {id:'a_uemail', type:'attr',label:'email',              x:790, y:163, w:90, h:38, fill:'#EBF3FE',stroke:'#5b82bd',tc:'#1a3a6b'},
+  {id:'a_ucre',   type:'attr',label:'created_at',         x:782, y:318, w:118,h:38, fill:'#EBF3FE',stroke:'#5b82bd',tc:'#1a3a6b'},
+  // customer
+  {id:'a_cuid',   type:'attr',label:'user_id',   pk:true, x:38,  y:573, w:112,h:38, fill:'#E9F4E8',stroke:'#6aab5e',tc:'#1a4a1a'},
+  {id:'a_cpref',  type:'attr',label:'preference',         x:238, y:498, w:120,h:38, fill:'#E9F4E8',stroke:'#6aab5e',tc:'#1a4a1a'},
+  // business_owner
+  {id:'a_boid',   type:'attr',label:'user_id',   pk:true, x:328, y:573, w:112,h:38, fill:'#E9F4E8',stroke:'#6aab5e',tc:'#1a4a1a'},
+  {id:'a_bolic',  type:'attr',label:'license_no',         x:548, y:463, w:124,h:38, fill:'#E9F4E8',stroke:'#6aab5e',tc:'#1a4a1a'},
+  // ngo_admin
+  {id:'a_naid',   type:'attr',label:'user_id',   pk:true, x:622, y:663, w:112,h:38, fill:'#E9F4E8',stroke:'#6aab5e',tc:'#1a4a1a'},
+  {id:'a_narole', type:'attr',label:'ngo_role',           x:828, y:558, w:108,h:38, fill:'#E9F4E8',stroke:'#6aab5e',tc:'#1a4a1a'},
+  // organization
+  {id:'a_orgid',  type:'attr',label:'org_id',    pk:true, x:1058,y:132, w:158,h:38, fill:'#FFF5E0',stroke:'#d18c00',tc:'#5a2800'},
+  {id:'a_orgn',   type:'attr',label:'name',               x:933, y:202, w:90, h:38, fill:'#FFF5E0',stroke:'#d18c00',tc:'#5a2800'},
+  {id:'a_orgl',   type:'attr',label:'location',           x:1362,y:193, w:108,h:38, fill:'#FFF5E0',stroke:'#d18c00',tc:'#5a2800'},
+  {id:'a_orgt',   type:'attr',label:'org_type',           x:928, y:308, w:118,h:38, fill:'#FFF5E0',stroke:'#d18c00',tc:'#5a2800'},
+  {id:'a_orgcre', type:'attr',label:'created_at',         x:1353,y:303, w:122,h:38, fill:'#FFF5E0',stroke:'#d18c00',tc:'#5a2800'},
+  // business
+  {id:'a_bioid',  type:'attr',label:'org_id',    pk:true, x:958, y:388, w:112,h:38, fill:'#FFFAE0',stroke:'#c9b100',tc:'#4a3a00'},
+  {id:'a_bitype', type:'attr',label:'biz_type',           x:1142,y:545, w:132,h:38, fill:'#FFFAE0',stroke:'#c9b100',tc:'#4a3a00'},
+  // ngo
+  {id:'a_ngoid',  type:'attr',label:'org_id',    pk:true, x:1318,y:383, w:112,h:38, fill:'#FFFAE0',stroke:'#c9b100',tc:'#4a3a00'},
+  {id:'a_ngorole',type:'attr',label:'ngo_role',           x:1460,y:543, w:102,h:38, fill:'#FFFAE0',stroke:'#c9b100',tc:'#4a3a00'},
+  // product
+  {id:'a_pid',    type:'attr',label:'product_id',pk:true, x:943, y:858, w:132,h:38, fill:'#EDE6F0',stroke:'#8b5fa3',tc:'#3a1a5a'},
+  {id:'a_pname',  type:'attr',label:'name',               x:758, y:928, w:90, h:38, fill:'#EDE6F0',stroke:'#8b5fa3',tc:'#3a1a5a'},
+  {id:'a_pprice', type:'attr',label:'orig_price',         x:1148,y:898, w:122,h:38, fill:'#EDE6F0',stroke:'#8b5fa3',tc:'#3a1a5a'},
+  {id:'a_pai',    type:'attr',label:'ai_price',           x:1148,y:958, w:112,h:38, fill:'#EDE6F0',stroke:'#8b5fa3',tc:'#3a1a5a'},
+  {id:'a_pqty',   type:'attr',label:'quantity',           x:958, y:1078,w:112,h:38, fill:'#EDE6F0',stroke:'#8b5fa3',tc:'#3a1a5a'},
+  {id:'a_pexp',   type:'attr',label:'expiry',             x:1158,y:1028,w:102,h:38, fill:'#EDE6F0',stroke:'#8b5fa3',tc:'#3a1a5a'},
+  {id:'a_pstat',  type:'attr',label:'status',             x:758, y:1008,w:90, h:38, fill:'#EDE6F0',stroke:'#8b5fa3',tc:'#3a1a5a'},
+  // orders
+  {id:'a_orid',   type:'attr',label:'order_id',  pk:true, x:193, y:858, w:118,h:38, fill:'#EDE6F0',stroke:'#8b5fa3',tc:'#3a1a5a'},
+  {id:'a_ordate', type:'attr',label:'order_date',         x:33,  y:893, w:112,h:38, fill:'#EDE6F0',stroke:'#8b5fa3',tc:'#3a1a5a'},
+  {id:'a_orstat', type:'attr',label:'status',             x:33,  y:973, w:98, h:38, fill:'#EDE6F0',stroke:'#8b5fa3',tc:'#3a1a5a'},
+  {id:'a_orpays', type:'attr',label:'pay_status',         x:353, y:873, w:122,h:38, fill:'#EDE6F0',stroke:'#8b5fa3',tc:'#3a1a5a'},
+  {id:'a_orpaym', type:'attr',label:'pay_method',         x:353, y:953, w:125,h:38, fill:'#EDE6F0',stroke:'#8b5fa3',tc:'#3a1a5a'},
+  // order_item
+  {id:'a_oiid',   type:'attr',label:'oi_id',     pk:true, x:543, y:858, w:112,h:38, fill:'#EDE6F0',stroke:'#8b5fa3',tc:'#3a1a5a'},
+  {id:'a_oiqty',  type:'attr',label:'quantity',           x:458, y:1048,w:108,h:38, fill:'#EDE6F0',stroke:'#8b5fa3',tc:'#3a1a5a'},
+  {id:'a_oiprice',type:'attr',label:'price',              x:652, y:1048,w:92, h:38, fill:'#EDE6F0',stroke:'#8b5fa3',tc:'#3a1a5a'},
+  // pickup
+  {id:'a_pkid',   type:'attr',label:'pickup_id', pk:true, x:112, y:1498,w:118,h:38, fill:'#FBE4E3',stroke:'#c0504d',tc:'#5a1a1a'},
+  {id:'a_pkcode', type:'attr',label:'pickup_code',        x:102, y:1588,w:122,h:38, fill:'#FBE4E3',stroke:'#c0504d',tc:'#5a1a1a'},
+  {id:'a_pktime', type:'attr',label:'pickup_time',        x:252, y:1683,w:122,h:38, fill:'#FBE4E3',stroke:'#c0504d',tc:'#5a1a1a'},
+  {id:'a_pkexp',  type:'attr',label:'expired_at',         x:392, y:1588,w:112,h:38, fill:'#FBE4E3',stroke:'#c0504d',tc:'#5a1a1a'},
+  {id:'a_pkstat', type:'attr',label:'status',             x:2,   y:1648,w:98, h:38, fill:'#FBE4E3',stroke:'#c0504d',tc:'#5a1a1a'},
+  {id:'a_pkcre',  type:'attr',label:'created_at',         x:12,  y:1728,w:118,h:38, fill:'#FBE4E3',stroke:'#c0504d',tc:'#5a1a1a'},
+  // locker
+  {id:'a_lid',    type:'attr',label:'locker_id', pk:true, x:812, y:1488,w:118,h:38, fill:'#FBE4E3',stroke:'#c0504d',tc:'#5a1a1a'},
+  {id:'a_lloc',   type:'attr',label:'location',           x:628, y:1498,w:108,h:38, fill:'#FBE4E3',stroke:'#c0504d',tc:'#5a1a1a'},
+  {id:'a_laddr',  type:'attr',label:'address',            x:628, y:1578,w:102,h:38, fill:'#FBE4E3',stroke:'#c0504d',tc:'#5a1a1a'},
+  {id:'a_lcode',  type:'attr',label:'locker_code',        x:972, y:1488,w:128,h:38, fill:'#FBE4E3',stroke:'#c0504d',tc:'#5a1a1a'},
+  {id:'a_lstat',  type:'attr',label:'status',             x:968, y:1573,w:98, h:38, fill:'#FBE4E3',stroke:'#c0504d',tc:'#5a1a1a'},
+  {id:'a_lcre',   type:'attr',label:'created_at',         x:818, y:1683,w:122,h:38, fill:'#FBE4E3',stroke:'#c0504d',tc:'#5a1a1a'},
+  // donation
+  {id:'a_did',    type:'attr',label:'donation_id',pk:true,x:1322,y:858, w:128,h:38, fill:'#E0F2F2',stroke:'#0096a0',tc:'#003040'},
+  {id:'a_dqty',   type:'attr',label:'quantity',           x:1192,y:1018,w:112,h:38, fill:'#E0F2F2',stroke:'#0096a0',tc:'#003040'},
+  {id:'a_dstat',  type:'attr',label:'status',             x:1508,y:978, w:98, h:38, fill:'#E0F2F2',stroke:'#0096a0',tc:'#003040'},
+  {id:'a_dcre',   type:'attr',label:'donated_at',         x:1362,y:1068,w:122,h:38, fill:'#E0F2F2',stroke:'#0096a0',tc:'#003040'},
 ];
 
-const diagram = document.getElementById('diagram');
-const svg = document.getElementById('lines');
+// [fromId, toId, fromCardinality?, toCardinality?]
+const EDGES=[
+  // attr → entity
+  ['a_rid','e_roles'],['a_rname','e_roles'],
+  ['a_uid','e_users'],['a_uname','e_users'],['a_uphone','e_users'],['a_uemail','e_users'],['a_ucre','e_users'],
+  ['a_cuid','e_cust'],['a_cpref','e_cust'],
+  ['a_boid','e_bizown'],['a_bolic','e_bizown'],
+  ['a_naid','e_ngoadm'],['a_narole','e_ngoadm'],
+  ['a_orgid','e_org'],['a_orgn','e_org'],['a_orgl','e_org'],['a_orgt','e_org'],['a_orgcre','e_org'],
+  ['a_bioid','e_biz'],['a_bitype','e_biz'],
+  ['a_ngoid','e_ngo'],['a_ngorole','e_ngo'],
+  ['a_pid','e_product'],['a_pname','e_product'],['a_pprice','e_product'],['a_pai','e_product'],
+  ['a_pqty','e_product'],['a_pexp','e_product'],['a_pstat','e_product'],
+  ['a_orid','e_orders'],['a_ordate','e_orders'],['a_orstat','e_orders'],['a_orpays','e_orders'],['a_orpaym','e_orders'],
+  ['a_oiid','e_oitem'],['a_oiqty','e_oitem'],['a_oiprice','e_oitem'],
+  ['a_pkid','e_pickup'],['a_pkcode','e_pickup'],['a_pktime','e_pickup'],
+  ['a_pkexp','e_pickup'],['a_pkstat','e_pickup'],['a_pkcre','e_pickup'],
+  ['a_lid','e_locker'],['a_lloc','e_locker'],['a_laddr','e_locker'],
+  ['a_lcode','e_locker'],['a_lstat','e_locker'],['a_lcre','e_locker'],
+  ['a_did','e_donation'],['a_dqty','e_donation'],['a_dstat','e_donation'],['a_dcre','e_donation'],
+  // entity ↔ relationship diamond (with cardinality labels)
+  ['e_roles',   'rel_hasrole', '1',  null],
+  ['rel_hasrole','e_users',    null, 'N' ],
+  ['e_users',   'rel_isa_u',   '1',  null],
+  ['rel_isa_u', 'e_cust',      null, 'N' ],
+  ['rel_isa_u', 'e_bizown',    null, 'N' ],
+  ['rel_isa_u', 'e_ngoadm',    null, 'N' ],
+  ['e_users',   'rel_manages', 'N',  null],
+  ['rel_manages','e_org',      null, '1' ],
+  ['e_org',     'rel_isa_o',   '1',  null],
+  ['rel_isa_o', 'e_biz',       null, 'N' ],
+  ['rel_isa_o', 'e_ngo',       null, 'N' ],
+  ['e_bizown',  'rel_biz_bt',  'N',  null],
+  ['rel_biz_bt','e_biz',       null, '1' ],
+  ['e_ngoadm',  'rel_ngo_bt',  'N',  null],
+  ['rel_ngo_bt','e_ngo',       null, '1' ],
+  ['e_biz',     'rel_sells',   '1',  null],
+  ['rel_sells', 'e_product',   null, 'N' ],
+  ['e_cust',    'rel_places',  '1',  null],
+  ['rel_places','e_orders',    null, 'N' ],
+  ['e_orders',  'rel_contains','1',  null],
+  ['rel_contains','e_oitem',   null, 'N' ],
+  ['e_oitem',   'rel_refs',    'N',  null],
+  ['rel_refs',  'e_product',   null, '1' ],
+  ['e_orders',  'rel_delivers','1',  null],
+  ['rel_delivers','e_pickup',  null, '1' ],
+  ['e_pickup',  'rel_uses',    'N',  null],
+  ['rel_uses',  'e_locker',    null, '1' ],
+  ['e_ngo',     'rel_receives','1',  null],
+  ['rel_receives','e_donation',null, 'N' ],
+  ['e_product', 'rel_involves','M',  null],
+  ['rel_involves','e_donation',null, 'N' ],
+];
 
-// Render tables
-const cardEls = {};
-tables.forEach(t => {
-  const card = document.createElement('div');
-  card.className = `table-card ${t.cls}`;
-  card.id = `card-${t.id}`;
-  card.style.left = t.x + 'px';
-  card.style.top = t.y + 'px';
+// ── State ──────────────────────────────────────────────────
+const pos={};
+NODES.forEach(n=>{pos[n.id]={x:n.x,y:n.y,w:n.w,h:n.h};});
+let vx=10,vy=-40,vScale=0.46,dragId=null,panStart=null;
+const rootG=document.getElementById('root-g');
+const svgEl=document.getElementById('main-svg');
+const wrap=document.getElementById('svg-wrap');
+let edgeLayer;
+const nodeEls={};
 
-  let fields = t.fields.map(f => {
-    const fkLabel = f.fk ? `<span class="field-fk">→${f.fk}</span>` : '';
-    return `<div class="field-row">
-      <span class="field-key">${f.key}</span>
-      <span class="field-name">${f.name}</span>
-      <span class="field-type">${f.type}</span>
-      ${fkLabel}
-    </div>`;
-  }).join('');
-
-  card.innerHTML = `
-    <div class="table-header">
-      <span class="table-icon">${t.icon}</span>
-      <span>${t.label}</span>
-    </div>
-    <div class="table-body">${fields}</div>`;
-
-  diagram.appendChild(card);
-  cardEls[t.id] = card;
-
-  // Drag
-  let dragging = false, ox, oy;
-  card.addEventListener('mousedown', e => {
-    if (e.button !== 0) return;
-    dragging = true;
-    ox = e.clientX / scale - parseInt(card.style.left);
-    oy = e.clientY / scale - parseInt(card.style.top);
-    card.style.zIndex = 999;
-    e.stopPropagation();
-  });
-  document.addEventListener('mousemove', e => {
-    if (!dragging) return;
-    card.style.left = (e.clientX / scale - ox) + 'px';
-    card.style.top = (e.clientY / scale - oy) + 'px';
-    drawLines();
-  });
-  document.addEventListener('mouseup', () => {
-    if (dragging) { dragging = false; card.style.zIndex = ''; }
-  });
-});
-
-// Draw relationship lines
-function getCenter(id) {
-  const c = cardEls[id];
-  return {
-    x: parseInt(c.style.left) + c.offsetWidth / 2,
-    y: parseInt(c.style.top) + c.offsetHeight / 2,
-  };
-}
-
-function getEdge(fromId, toId) {
-  const f = cardEls[fromId], t = cardEls[toId];
-  const fx = parseInt(f.style.left), fy = parseInt(f.style.top);
-  const fw = f.offsetWidth, fh = f.offsetHeight;
-  const tx = parseInt(t.style.left), ty = parseInt(t.style.top);
-  const tw = t.offsetWidth, th = t.offsetHeight;
-
-  const fcx = fx + fw/2, fcy = fy + fh/2;
-  const tcx = tx + tw/2, tcy = ty + th/2;
-
-  const dx = tcx - fcx, dy = tcy - fcy;
-  let sx, sy, ex, ey;
-
-  if (Math.abs(dx) > Math.abs(dy)) {
-    sx = dx > 0 ? fx + fw : fx; sy = fcy;
-    ex = dx > 0 ? tx : tx + tw; ey = tcy;
-  } else {
-    sx = fcx; sy = dy > 0 ? fy + fh : fy;
-    ex = tcx; ey = dy > 0 ? ty : ty + th;
-  }
-  return { sx, sy, ex, ey };
-}
-
-function svgEl(tag, attrs) {
-  const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
-  Object.entries(attrs).forEach(([k,v]) => el.setAttribute(k, v));
+// ── Helpers ────────────────────────────────────────────────
+function mk(tag,attrs,sty){
+  const el=document.createElementNS(NS,tag);
+  if(attrs)Object.entries(attrs).forEach(([k,v])=>el.setAttribute(k,v));
+  if(sty)el.style.cssText=sty;
   return el;
 }
+const ncx=id=>pos[id].x+pos[id].w/2;
+const ncy=id=>pos[id].y+pos[id].h/2;
 
-function drawCrowsFoot(svgRoot, x, y, angle, type, color) {
-  const len = 10, spread = 7;
-  const cos = Math.cos(angle), sin = Math.sin(angle);
-  const px1 = x + len*cos, py1 = y + len*sin;
-  if (type === 'many') {
-    svgRoot.appendChild(svgEl('line', { x1:x, y1:y, x2:px1, y2:py1, stroke:color, 'stroke-width':1.5, opacity:0.9 }));
-    svgRoot.appendChild(svgEl('line', { x1:x, y1:y, x2:px1+spread*sin, y2:py1-spread*cos, stroke:color, 'stroke-width':1.5, opacity:0.9 }));
-    svgRoot.appendChild(svgEl('line', { x1:x, y1:y, x2:px1-spread*sin, y2:py1+spread*cos, stroke:color, 'stroke-width':1.5, opacity:0.9 }));
-    svgRoot.appendChild(svgEl('line', { x1:px1+spread*sin, y1:py1-spread*cos, x2:px1-spread*sin, y2:py1+spread*cos, stroke:color, 'stroke-width':1.5, opacity:0.9 }));
-  } else {
-    const px2 = x+(len+5)*cos, py2 = y+(len+5)*sin;
-    svgRoot.appendChild(svgEl('line', { x1:px1+spread*sin, y1:py1-spread*cos, x2:px1-spread*sin, y2:py1+spread*cos, stroke:color, 'stroke-width':2, opacity:0.9 }));
-    svgRoot.appendChild(svgEl('line', { x1:px2+spread*sin, y1:py2-spread*cos, x2:px2-spread*sin, y2:py2+spread*cos, stroke:color, 'stroke-width':2, opacity:0.9 }));
-  }
-}
-
-function drawLines() {
-  svg.innerHTML = '';
-  const typeColors = { '1:1':'#a855f7', '1:N':'#ffd166', 'N:1':'#0091ff', 'N:M':'#ff6b6b' };
-
-  relations.forEach(rel => {
-    const color = fkColors[rel.to] || '#64748b';
-    const { sx, sy, ex, ey } = getEdge(rel.from, rel.to);
-    const mx = (sx + ex) / 2;
-    const d = `M${sx},${sy} C${mx},${sy} ${mx},${ey} ${ex},${ey}`;
-
-    svg.appendChild(svgEl('path', { d, stroke:color, 'stroke-width':'1.8', fill:'none', opacity:'0.5' }));
-
-    const [fromCard, toCard] = rel.type.split(':');
-    const startAngle = Math.atan2(sy - ey, sx - ex);
-    const endAngle   = Math.atan2(ey - sy, ex - sx);
-    drawCrowsFoot(svg, sx, sy, startAngle, fromCard === 'N' ? 'many' : 'one', color);
-    drawCrowsFoot(svg, ex, ey, endAngle,   toCard   === 'N' ? 'many' : 'one', color);
-
-    const bmx = (sx + ex) / 2, bmy = (sy + ey) / 2;
-    const badgeColor = typeColors[rel.type] || color;
-    svg.appendChild(svgEl('rect', { x:bmx-16, y:bmy-10, width:32, height:18, rx:4, fill:'#0d0f14', stroke:badgeColor, 'stroke-width':1.2, opacity:0.97 }));
-    const txt = svgEl('text', { x:bmx, y:bmy+4, 'text-anchor':'middle', fill:badgeColor, 'font-family':'JetBrains Mono,monospace', 'font-size':'9', 'font-weight':'700' });
-    txt.textContent = rel.type;
-    svg.appendChild(txt);
+// ── Sections ───────────────────────────────────────────────
+function renderSections(){
+  SECTIONS.forEach(s=>{
+    const g=mk('g'); g.style.pointerEvents='none';
+    g.appendChild(mk('rect',{x:s.x,y:s.y,width:s.w,height:s.h,rx:12,
+      fill:s.fill,'fill-opacity':'0.55',stroke:s.stroke,'stroke-width':'1.5','stroke-dasharray':'8 4'}));
+    const t=mk('text',{x:s.x+12,y:s.y+20,'font-size':'12','font-weight':'bold',
+      'font-family':'Segoe UI,Arial,sans-serif',fill:s.tc});
+    t.textContent=s.label; g.appendChild(t); rootG.appendChild(g);
   });
 }
 
-// Pan & Zoom
-let scale = 0.72, tx = 40, ty = 20;
-let panning = false, px, py;
-const wrap = document.getElementById('canvas-wrap');
-
-function applyTransform() {
-  diagram.style.transform = `translate(${tx}px,${ty}px) scale(${scale})`;
-  drawLines();
+// ── Edges ─────────────────────────────────────────────────
+function setupEdgeLayer(){
+  edgeLayer=mk('g'); edgeLayer.style.pointerEvents='none'; rootG.appendChild(edgeLayer);
+}
+function updateEdges(){
+  edgeLayer.innerHTML='';
+  EDGES.forEach(([fid,tid,fc,tc])=>{
+    const fn=NODES.find(n=>n.id===fid);
+    const lc=fn?fn.stroke:'#aaa';
+    const x1=ncx(fid),y1=ncy(fid),x2=ncx(tid),y2=ncy(tid);
+    edgeLayer.appendChild(mk('line',{x1,y1,x2,y2,stroke:lc,'stroke-width':'1.4',opacity:'0.78'}));
+    if(fc){
+      const t=mk('text',{x:x1+(x2-x1)*0.17,y:y1+(y2-y1)*0.17-5,
+        'text-anchor':'middle','font-size':'11','font-weight':'bold',
+        'font-family':'Segoe UI,Arial,sans-serif',fill:lc});
+      t.textContent=fc; edgeLayer.appendChild(t);
+    }
+    if(tc){
+      const t=mk('text',{x:x2+(x1-x2)*0.17,y:y2+(y1-y2)*0.17-5,
+        'text-anchor':'middle','font-size':'11','font-weight':'bold',
+        'font-family':'Segoe UI,Arial,sans-serif',fill:lc});
+      t.textContent=tc; edgeLayer.appendChild(t);
+    }
+  });
 }
 
-wrap.addEventListener('mousedown', e => {
-  if (e.target === wrap || e.target === diagram || e.target === svg) {
-    panning = true; px = e.clientX - tx; py = e.clientY - ty;
-    wrap.classList.add('dragging');
+// ── Node rendering ─────────────────────────────────────────
+function buildNode(n){
+  const g=mk('g'); g.setAttribute('data-id',n.id); g.classList.add('node-g');
+  const p=pos[n.id];
+  if(n.type==='entity'){
+    g.appendChild(mk('rect',{x:p.x,y:p.y,width:p.w,height:p.h,rx:'6',
+      fill:n.fill,stroke:n.stroke,'stroke-width':'2.5',filter:'url(#shadow)'}));
+    const t=mk('text',{x:p.x+p.w/2,y:p.y+p.h/2+5,'text-anchor':'middle',
+      'font-size':'13','font-weight':'bold','font-family':'Segoe UI,Arial,sans-serif',fill:n.tc,
+      style:'pointer-events:none;user-select:none'});
+    t.textContent=n.label; g.appendChild(t);
+  } else if(n.type==='attr'){
+    g.appendChild(mk('ellipse',{cx:p.x+p.w/2,cy:p.y+p.h/2,rx:p.w/2,ry:p.h/2,
+      fill:n.fill,stroke:n.stroke,'stroke-width':'1.5'}));
+    const t=mk('text',{x:p.x+p.w/2,y:p.y+p.h/2+4,'text-anchor':'middle',
+      'font-size':'11','font-family':'Segoe UI,Arial,sans-serif',fill:n.tc,
+      style:`pointer-events:none;user-select:none;${n.pk?'text-decoration:underline;':''}`});
+    t.textContent=n.label; g.appendChild(t);
+  } else {
+    const hw=p.w/2,hh=p.h/2,cx=p.x+hw,cy=p.y+hh;
+    g.appendChild(mk('polygon',{
+      points:`${cx},${cy-hh} ${cx+hw},${cy} ${cx},${cy+hh} ${cx-hw},${cy}`,
+      fill:n.fill,stroke:n.stroke,'stroke-width':'1.8'}));
+    const t=mk('text',{x:cx,y:cy+4,'text-anchor':'middle','font-size':'11','font-weight':'bold',
+      'font-family':'Segoe UI,Arial,sans-serif',fill:n.tc,
+      style:'pointer-events:none;user-select:none'});
+    t.textContent=n.label; g.appendChild(t);
   }
-});
-document.addEventListener('mousemove', e => {
-  if (!panning) return;
-  tx = e.clientX - px; ty = e.clientY - py;
-  applyTransform();
-});
-document.addEventListener('mouseup', () => { panning = false; wrap.classList.remove('dragging'); });
+  g.addEventListener('mousedown',e=>{
+    e.stopPropagation(); dragId=n.id;
+    wrap.classList.add('panning'); e.preventDefault();
+  });
+  nodeEls[n.id]=g; return g;
+}
 
-wrap.addEventListener('wheel', e => {
+function posNode(id){
+  const g=nodeEls[id],p=pos[id],n=NODES.find(x=>x.id===id);
+  if(!g||!n) return;
+  if(n.type==='entity'){
+    g.querySelector('rect').setAttribute('x',p.x);
+    g.querySelector('rect').setAttribute('y',p.y);
+    const t=g.querySelector('text');
+    t.setAttribute('x',p.x+p.w/2); t.setAttribute('y',p.y+p.h/2+5);
+  } else if(n.type==='attr'){
+    const e=g.querySelector('ellipse');
+    e.setAttribute('cx',p.x+p.w/2); e.setAttribute('cy',p.y+p.h/2);
+    const t=g.querySelector('text');
+    t.setAttribute('x',p.x+p.w/2); t.setAttribute('y',p.y+p.h/2+4);
+  } else {
+    const hw=p.w/2,hh=p.h/2,cx=p.x+hw,cy=p.y+hh;
+    g.querySelector('polygon').setAttribute('points',
+      `${cx},${cy-hh} ${cx+hw},${cy} ${cx},${cy+hh} ${cx-hw},${cy}`);
+    const t=g.querySelector('text');
+    t.setAttribute('x',cx); t.setAttribute('y',cy+4);
+  }
+}
+
+// ── Transform / pan / zoom ─────────────────────────────────
+function applyT(){ rootG.setAttribute('transform',`translate(${vx},${vy}) scale(${vScale})`); }
+function resetView(){ vx=10; vy=-40; vScale=0.46; applyT(); }
+function zoomBy(f){
+  const cx=window.innerWidth/2,cy=window.innerHeight/2;
+  vx=cx-(cx-vx)*f; vy=cy-(cy-vy)*f;
+  vScale=Math.min(4,Math.max(0.1,vScale*f)); applyT();
+}
+
+wrap.addEventListener('mousedown',e=>{
+  if(dragId) return;
+  panStart={x:e.clientX-vx,y:e.clientY-vy};
+  wrap.classList.add('panning');
+});
+document.addEventListener('mousemove',e=>{
+  if(dragId){
+    pos[dragId].x+=e.movementX/vScale;
+    pos[dragId].y+=e.movementY/vScale;
+    posNode(dragId); updateEdges(); return;
+  }
+  if(panStart){ vx=e.clientX-panStart.x; vy=e.clientY-panStart.y; applyT(); }
+});
+document.addEventListener('mouseup',()=>{
+  dragId=null; panStart=null; wrap.classList.remove('panning');
+});
+wrap.addEventListener('wheel',e=>{
   e.preventDefault();
-  const delta = e.deltaY > 0 ? 0.9 : 1.1;
-  scale = Math.min(2, Math.max(0.2, scale * delta));
-  applyTransform();
-}, { passive: false });
+  const f=e.deltaY>0?0.9:1.11;
+  const r=svgEl.getBoundingClientRect();
+  vx=(e.clientX-r.left)-(e.clientX-r.left-vx)*f;
+  vy=(e.clientY-r.top) -(e.clientY-r.top -vy)*f;
+  vScale=Math.min(4,Math.max(0.1,vScale*f)); applyT();
+},{passive:false});
+window.addEventListener('resize',()=>{
+  svgEl.setAttribute('width',window.innerWidth);
+  svgEl.setAttribute('height',window.innerHeight);
+});
 
-function resetView() { scale = 0.72; tx = 40; ty = 20; applyTransform(); }
-function zoomIn() { scale = Math.min(2, scale * 1.2); applyTransform(); }
-function zoomOut() { scale = Math.max(0.2, scale * 0.85); applyTransform(); }
+// ── Download self ──────────────────────────────────────────
+function downloadSelf(){
+  const blob=new Blob(['<!DOCTYPE html>\n'+document.documentElement.outerHTML],{type:'text/html'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='ERD_FoodRescue.html';
+  a.click(); URL.revokeObjectURL(a.href);
+}
 
-// Init after render
-setTimeout(() => { applyTransform(); }, 100);
+// ── Init ───────────────────────────────────────────────────
+svgEl.setAttribute('width',window.innerWidth);
+svgEl.setAttribute('height',window.innerHeight);
+renderSections();
+setupEdgeLayer();
+['attr','rel','entity'].forEach(type=>
+  NODES.filter(n=>n.type===type).forEach(n=>rootG.appendChild(buildNode(n)))
+);
+updateEdges();
+applyT();
 </script>
 </body>
 </html>
